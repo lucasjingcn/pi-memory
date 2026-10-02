@@ -63,15 +63,17 @@ describe("readSettingsConfig", () => {
   });
 
   it("ignores non-string consolidationModel", () => {
+    const baseline = readSettingsConfig(tmpProject).consolidationModel;
     writeProjectSettings({ memory: { consolidationModel: 42 } });
     const cfg = readSettingsConfig(tmpProject);
-    assert.equal(cfg.consolidationModel, undefined);
+    assert.equal(cfg.consolidationModel, baseline);
   });
 
   it("ignores empty / whitespace-only consolidationModel", () => {
+    const baseline = readSettingsConfig(tmpProject).consolidationModel;
     writeProjectSettings({ memory: { consolidationModel: "   " } });
     const cfg = readSettingsConfig(tmpProject);
-    assert.equal(cfg.consolidationModel, undefined);
+    assert.equal(cfg.consolidationModel, baseline);
   });
 
   it("trims surrounding whitespace on a valid model string", () => {
@@ -133,6 +135,7 @@ describe("readSettingsConfig", () => {
   });
 
   it("a malformed consolidationModel does not clobber a valid lessonInjection", () => {
+    const baseline = readSettingsConfig(tmpProject).consolidationModel;
     writeProjectSettings({
       memory: {
         lessonInjection: "selective",
@@ -141,6 +144,6 @@ describe("readSettingsConfig", () => {
     });
     const cfg = readSettingsConfig(tmpProject);
     assert.equal(cfg.lessonInjection, "selective");
-    assert.equal(cfg.consolidationModel, undefined);
+    assert.equal(cfg.consolidationModel, baseline);
   });
 });

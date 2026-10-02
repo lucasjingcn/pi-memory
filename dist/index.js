@@ -525,16 +525,17 @@ ${MEMORY_DRIFT_CAVEAT}
 function getRelevantLessons(store, prompt, cwd) {
   const seen = /* @__PURE__ */ new Set();
   const result = [];
+  const slug = cwd ? projectSlug(cwd) : "";
+  const visible = (l) => !l.project || slug !== "" && l.project === slug;
   function add(lessons) {
     for (const l of lessons) {
-      if (!seen.has(l.id)) {
+      if (visible(l) && !seen.has(l.id)) {
         seen.add(l.id);
         result.push(l);
       }
     }
   }
   add(store.searchLessons(prompt, LESSON_SEARCH_LIMIT));
-  const slug = cwd ? projectSlug(cwd) : "";
   if (slug) {
     add(store.searchLessons(slug, 5));
   }
@@ -565,7 +566,7 @@ function buildFallbackBlock(store, cwd) {
     sections.push(formatSection("Tool Preferences", tools.map(formatSemantic)));
     semanticCount += tools.length;
   }
-  const lessons = store.listLessons(void 0, 50, slug || void 0);
+  const lessons = store.listLessons(void 0, 50, slug || void 0).filter((l) => !l.project || slug !== "" && l.project === slug);
   if (lessons.length > 0) {
     const corrections = lessons.filter((l) => l.negative);
     const positives = lessons.filter((l) => !l.negative);
