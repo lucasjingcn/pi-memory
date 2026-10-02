@@ -1211,7 +1211,7 @@ function warnUnknownKeys(block, blockName, knownKeys) {
     `pi-memory: ignoring unknown key(s) in settings.json "${blockName}" block: ${unknown.join(", ")} (expected: ${knownKeys.join(", ")})`
   );
 }
-var PI_MEMORY_KNOWN_KEYS = ["localPath", "lessonInjection", "consolidationModel", "perTurnInjection", "injectionMode", "embedding"];
+var PI_MEMORY_KNOWN_KEYS = ["localPath", "lessonInjection", "consolidationModel", "consolidation", "perTurnInjection", "injectionMode", "embedding"];
 var PI_TOTAL_RECALL_KNOWN_KEYS = ["localPath"];
 function resolveDbPath(cwd) {
   try {
@@ -1246,6 +1246,9 @@ function mergeMemorySettings(config, memorySettings) {
   }
   if (typeof m.consolidationModel === "string" && m.consolidationModel.trim()) {
     config.consolidationModel = m.consolidationModel.trim();
+  }
+  if (typeof m.consolidation === "boolean") {
+    config.consolidation = m.consolidation;
   }
   config.embedding = parseEmbeddingSettings(m.embedding) ?? config.embedding;
 }
@@ -1525,7 +1528,7 @@ ${text}` };
   });
   pi.on("session_before_switch", async (_event, ctx) => {
     if (!store) return;
-    if (pendingUserMessages.length >= 3) {
+    if (pendingUserMessages.length >= 3 && injectorConfig.consolidation !== false) {
       ctx.ui.setStatus("pi-memory", "\u{1F9E0} Consolidating memory...");
       try {
         await consolidateSession();
@@ -1543,10 +1546,10 @@ ${text}` };
   pi.on("session_shutdown", async () => {
     if (!store) return;
     try {
-      if (cachedCtx && pendingUserMessages.length >= 3) {
+      if (cachedCtx && pendingUserMessages.length >= 3 && injectorConfig.consolidation !== false) {
         cachedCtx.ui.setStatus("pi-memory", "\u{1F9E0} Consolidating memory...");
       }
-      if (pendingUserMessages.length >= 3) {
+      if (pendingUserMessages.length >= 3 && injectorConfig.consolidation !== false) {
         try {
           await consolidateSession();
         } catch {

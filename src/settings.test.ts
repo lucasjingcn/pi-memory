@@ -76,6 +76,16 @@ describe("readSettingsConfig", () => {
     assert.equal(cfg.consolidationModel, baseline);
   });
 
+  it("reads consolidation false/true and ignores non-boolean values", () => {
+    const baseline = readSettingsConfig(tmpProject).consolidation;
+    writeProjectSettings({ memory: { consolidation: false } });
+    assert.equal(readSettingsConfig(tmpProject).consolidation, false);
+    writeProjectSettings({ memory: { consolidation: true } });
+    assert.equal(readSettingsConfig(tmpProject).consolidation, true);
+    writeProjectSettings({ memory: { consolidation: "no" } });
+    assert.equal(readSettingsConfig(tmpProject).consolidation, baseline);
+  });
+
   it("trims surrounding whitespace on a valid model string", () => {
     writeProjectSettings({ memory: { consolidationModel: "  claude-sonnet-4-20250514  " } });
     const cfg = readSettingsConfig(tmpProject);

@@ -28,6 +28,11 @@ export type LessonInjectionMode = "all" | "selective";
 export interface InjectorConfig {
   lessonInjection?: LessonInjectionMode;
   /**
+   * Set false to skip automatic session-end consolidation entirely. Manual
+   * `/memory-consolidate` still works. Default true.
+   */
+  consolidation?: boolean;
+  /**
    * Optional embedding provider for semantic search. Absent -- the default --
    * means FTS5 BM25 only and needs no configuration.
    *

@@ -130,7 +130,7 @@ function warnUnknownKeys(block: unknown, blockName: string, knownKeys: readonly 
   );
 }
 
-const PI_MEMORY_KNOWN_KEYS = ["localPath", "lessonInjection", "consolidationModel", "perTurnInjection", "injectionMode", "embedding"] as const;
+const PI_MEMORY_KNOWN_KEYS = ["localPath", "lessonInjection", "consolidationModel", "consolidation", "perTurnInjection", "injectionMode", "embedding"] as const;
 const PI_TOTAL_RECALL_KNOWN_KEYS = ["localPath"] as const;
 
 export function resolveDbPath(cwd: string): string {
@@ -183,6 +183,9 @@ function mergeMemorySettings(config: InjectorConfig, memorySettings: unknown): v
   }
   if (typeof m.consolidationModel === "string" && m.consolidationModel.trim()) {
     config.consolidationModel = m.consolidationModel.trim();
+  }
+  if (typeof m.consolidation === "boolean") {
+    config.consolidation = m.consolidation;
   }
   config.embedding = parseEmbeddingSettings(m.embedding) ?? config.embedding;
 }
@@ -640,7 +643,7 @@ export default function (pi: ExtensionAPI) {
   pi.on("session_before_switch", async (_event, ctx) => {
     if (!store) return;
 
-    if (pendingUserMessages.length >= 3) {
+    if (pendingUserMessages.length >= 3 && injectorConfig.consolidation !== false) {
       ctx.ui.setStatus("pi-memory", "🧠 Consolidating memory...");
       try {
         await consolidateSession();
@@ -664,12 +667,12 @@ export default function (pi: ExtensionAPI) {
 
     try {
       // Immediate visual feedback — user sees this as soon as C-c C-c fires
-      if (cachedCtx && pendingUserMessages.length >= 3) {
+      if (cachedCtx && pendingUserMessages.length >= 3 && injectorConfig.consolidation !== false) {
         cachedCtx.ui.setStatus("pi-memory", "🧠 Consolidating memory...");
       }
 
-      // Consolidate if we have enough conversation
-      if (pendingUserMessages.length >= 3) {
+      // Consolidate if we have enough conversation and automatic consolidation is on
+      if (pendingUserMessages.length >= 3 && injectorConfig.consolidation !== false) {
         try {
           await consolidateSession();
         } catch {
